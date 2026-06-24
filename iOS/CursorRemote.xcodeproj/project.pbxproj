@@ -1,0 +1,323 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		04D49BAA23F944523AF3FA5B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8762E2F8DB43A0ED554CB595 /* Models.swift */; };
+		121B81483DDAFABE3E7A6124 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87F9B112591BF8F4A278F205 /* NotificationManager.swift */; };
+		5593B0ACA3A5CDFBD98A1A03 /* ConversationPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D97A616E230382D5EC089B9 /* ConversationPickerView.swift */; };
+		6C442DCFC5BACF7613B75011 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C541B7307955AEE47EA27A0A /* AppDelegate.swift */; };
+		77C55D1B3C2B64F177EE14A2 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF86EAF60D35335CCAB4418 /* SettingsStore.swift */; };
+		A1C14FA05148B42BD885629F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BDC131539C45A71B8FFDBCF /* ContentView.swift */; };
+		B132ECF5508F70D0EB1E0488 /* CursorRemoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A7DE397BA29BC2E9C053F1 /* CursorRemoteApp.swift */; };
+		B3EEF6DE06E73761FB4E3370 /* BridgeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0953E62EEB06EECD1073D880 /* BridgeClient.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0953E62EEB06EECD1073D880 /* BridgeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeClient.swift; sourceTree = "<group>"; };
+		5E44B3DD1E9DE542908EE53B /* CursorRemote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CursorRemote.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6BDC131539C45A71B8FFDBCF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		6D97A616E230382D5EC089B9 /* ConversationPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationPickerView.swift; sourceTree = "<group>"; };
+		85513C63D29E18BBD0E40CE5 /* CursorRemote.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CursorRemote.entitlements; sourceTree = "<group>"; };
+		8762E2F8DB43A0ED554CB595 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		87F9B112591BF8F4A278F205 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		C541B7307955AEE47EA27A0A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		CBF86EAF60D35335CCAB4418 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		E1A7DE397BA29BC2E9C053F1 /* CursorRemoteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorRemoteApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		4DF0F96DA2DDD4102A013F80 /* CursorRemote */ = {
+			isa = PBXGroup;
+			children = (
+				C541B7307955AEE47EA27A0A /* AppDelegate.swift */,
+				0953E62EEB06EECD1073D880 /* BridgeClient.swift */,
+				6BDC131539C45A71B8FFDBCF /* ContentView.swift */,
+				6D97A616E230382D5EC089B9 /* ConversationPickerView.swift */,
+				85513C63D29E18BBD0E40CE5 /* CursorRemote.entitlements */,
+				E1A7DE397BA29BC2E9C053F1 /* CursorRemoteApp.swift */,
+				8762E2F8DB43A0ED554CB595 /* Models.swift */,
+				87F9B112591BF8F4A278F205 /* NotificationManager.swift */,
+				CBF86EAF60D35335CCAB4418 /* SettingsStore.swift */,
+			);
+			path = CursorRemote;
+			sourceTree = "<group>";
+		};
+		7F812E5756492CB841F08708 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5E44B3DD1E9DE542908EE53B /* CursorRemote.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D44145E735FABF97C4689B19 = {
+			isa = PBXGroup;
+			children = (
+				4DF0F96DA2DDD4102A013F80 /* CursorRemote */,
+				7F812E5756492CB841F08708 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		457A47B039E00FFCD22DD169 /* CursorRemote */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7606862DEF35FEC2E88A8709 /* Build configuration list for PBXNativeTarget "CursorRemote" */;
+			buildPhases = (
+				B7621BBDB24BAB811E042ABF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CursorRemote;
+			packageProductDependencies = (
+			);
+			productName = CursorRemote;
+			productReference = 5E44B3DD1E9DE542908EE53B /* CursorRemote.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BA775044F62AFCC1A2A871D3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = CA468AB3584DA1668E8492DA /* Build configuration list for PBXProject "CursorRemote" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = D44145E735FABF97C4689B19;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7F812E5756492CB841F08708 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				457A47B039E00FFCD22DD169 /* CursorRemote */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B7621BBDB24BAB811E042ABF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C442DCFC5BACF7613B75011 /* AppDelegate.swift in Sources */,
+				B3EEF6DE06E73761FB4E3370 /* BridgeClient.swift in Sources */,
+				A1C14FA05148B42BD885629F /* ContentView.swift in Sources */,
+				5593B0ACA3A5CDFBD98A1A03 /* ConversationPickerView.swift in Sources */,
+				B132ECF5508F70D0EB1E0488 /* CursorRemoteApp.swift in Sources */,
+				04D49BAA23F944523AF3FA5B /* Models.swift in Sources */,
+				121B81483DDAFABE3E7A6124 /* NotificationManager.swift in Sources */,
+				77C55D1B3C2B64F177EE14A2 /* SettingsStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		6578E3E52391E85E0ED6DF83 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		792FAD0E357FD9763D42A358 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CursorRemote/CursorRemote.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to Cursor Bridge on your Mac";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cursorremote.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FA8B023F4AF3F1E7899EAE52 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		FA8D7EE0FB012C4A7419BFFB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CursorRemote/CursorRemote.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3ET6W7PR2G;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to Cursor Bridge on your Mac";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jubblin.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7606862DEF35FEC2E88A8709 /* Build configuration list for PBXNativeTarget "CursorRemote" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				792FAD0E357FD9763D42A358 /* Debug */,
+				FA8D7EE0FB012C4A7419BFFB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CA468AB3584DA1668E8492DA /* Build configuration list for PBXProject "CursorRemote" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA8B023F4AF3F1E7899EAE52 /* Debug */,
+				6578E3E52391E85E0ED6DF83 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BA775044F62AFCC1A2A871D3 /* Project object */;
+}

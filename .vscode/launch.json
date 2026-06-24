@@ -1,0 +1,22 @@
+{
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:cursor ios}/Bridge",
+      "name": "Debug CursorBridge (Bridge)",
+      "program": "${workspaceFolder:cursor ios}/Bridge/.build/debug/CursorBridge",
+      "preLaunchTask": "swift: Build Debug CursorBridge (Bridge)"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:cursor ios}/Bridge",
+      "name": "Release CursorBridge (Bridge)",
+      "program": "${workspaceFolder:cursor ios}/Bridge/.build/release/CursorBridge",
+      "preLaunchTask": "swift: Build Release CursorBridge (Bridge)"
+    }
+  ]
+}

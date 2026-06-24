@@ -1,0 +1,127 @@
+# Cursor iOS Remote
+
+Remote-control your **local Cursor agent session** from your iPhone. Built for sofa coding and school-pickup steering — not cloud agent handoff.
+
+## Architecture
+
+```
+iPhone (CursorRemote) ──LAN or Tailscale──▶ Mac (CursorBridge menu bar) ──AX/AppleScript──▶ Cursor IDE
+```
+
+- **Mac bridge** — menu bar app exposing HTTP + WebSocket on port `8742`
+- **iOS app** — session status, approve/reject, follow-up prompts, agent session picker
+- **Away from home** — use Tailscale MagicDNS hostname (no cloud handoff)
+
+See [docs/spike-findings.md](docs/spike-findings.md) for why Cursor's official PWA / `agent worker` paths don't cover local IDE sessions.
+
+## Quick start
+
+### 1. Mac bridge
+
+```bash
+chmod +x scripts/*.sh
+./scripts/build-bridge.sh
+./scripts/run-bridge.sh
+```
+
+On first launch:
+
+1. Grant **Accessibility** permission when prompted (required for approve/reject automation).
+2. Click the menu bar icon — note **port** and **token**.
+3. Click **Copy pairing JSON** for the iOS app.
+
+Optional env vars:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `CURSOR_BRIDGE_PORT` | `8742` | API listen port |
+| `APNS_KEY_PATH` | — | APNs `.p8` key for push notifications |
+| `APNS_KEY_ID` | — | Apple key ID |
+| `APNS_TEAM_ID` | — | Apple team ID |
+| `APNS_TOPIC` | — | iOS bundle ID (`com.cursorremote.app`) |
+
+Token is stored at `~/.cursor-bridge/token.txt`.
+
+### 2. iOS app
+
+```bash
+cd iOS
+xcodegen generate
+open CursorRemote.xcodeproj
+```
+
+In Xcode:
+
+1. Select your **Development Team** for signing.
+2. Build and run on your iPhone (or TestFlight).
+3. Open **Settings** → paste pairing JSON from the Mac, or enter hostname + token manually.
+4. For school pickup: use your Mac's **Tailscale hostname** (e.g. `macbook.tailnet-name.ts.net`).
+
+### 3. Tailscale (away from home)
+
+1. Install Tailscale on Mac and iPhone.
+2. Use the Mac's MagicDNS name as hostname in iOS Settings.
+3. No inbound ports or Cloudflare needed if Tailscale covers both devices.
+
+## API (Mac bridge)
+
+All endpoints except `/health` require `Authorization: Bearer <token>`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Bridge health check |
+| GET | `/pairing` | Hostname, port, token |
+| GET | `/agents` | Agent conversations across all projects |
+| POST | `/agents/select` | `{"agentId":"..."}` — open session on Mac |
+| GET | `/projects` | List workspace projects (legacy) |
+| GET | `/projects/{id}/conversations` | List conversations for a project (legacy) |
+| POST | `/conversations/select` | Open chat on Mac (legacy) |
+| GET | `/session/status` | Current agent session state |
+| POST | `/session/prompt` | `{"text":"..."}` — send follow-up |
+| POST | `/session/approve` | Approve pending tool call |
+| POST | `/session/reject` | Reject pending tool call |
+| POST | `/devices/register` | Register APNs device token |
+| WS | `/ws` | Live status updates |
+
+Session states: `idle`, `running`, `awaiting_approval`, `unknown`, `error`.
+
+## Push notifications (optional)
+
+When the bridge detects `awaiting_approval`, it sends an APNs alert to registered devices.
+
+1. Create an APNs key in Apple Developer portal.
+2. Set `APNS_*` env vars before launching the bridge.
+3. Enable push capability in Xcode (already in entitlements).
+4. iOS app registers its token on launch.
+
+## Agent sessions
+
+The Mac bridge scans `~/.cursor/projects/*/agent-transcripts/` and maps each session to its Cursor workspace. On iOS:
+
+1. Tap **Load agents** (or the reload icon).
+2. Pick an **agent session** from the flat list.
+3. Tap **Open on Mac** — the bridge opens that workspace in Cursor and selects the chat.
+
+## Limitations
+
+- Cursor's agent UI is closed source; automation uses Accessibility API and may break on Cursor updates.
+- Approve/reject matches buttons titled Run, Accept, Approve, Skip, Reject, etc.
+- Prompt delivery uses Cmd+I composer shortcut + paste — tune in `CursorAutomation.swift` if your keybindings differ.
+- HTTP is unencrypted; use only on trusted LAN or Tailscale mesh.
+
+## Project layout
+
+```
+Bridge/           macOS menu bar + HTTP server (Swift)
+iOS/              iPhone SwiftUI app
+docs/             Spike findings and design notes
+scripts/          Build and run helpers
+Shared/           Shared protocol types (reference)
+.github/          GitHub Actions (CI + release)
+```
+
+## CI
+
+GitHub Actions builds the Mac bridge and iOS app on every push/PR to `main`.
+
+Tag a release with `v*` (e.g. `v1.0.0`) to publish a `CursorBridge` macOS binary on GitHub Releases.

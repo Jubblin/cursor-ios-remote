@@ -1,0 +1,16 @@
+.DS_Store
+
+# Swift / SPM
+Bridge/.build/
+Bridge/.swiftpm/
+.build/
+*.swiftpm/
+
+# Xcode
+*.xcuserdata/
+DerivedData/
+*.ipa
+*.dSYM.zip
+
+# Local secrets
+.cursor-bridge/
