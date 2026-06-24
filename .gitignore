@@ -2,9 +2,16 @@
 
 # Swift / SPM
 Bridge/.build/
+Bridge/.build-arm64/
+Bridge/.build-x86_64/
+Bridge/dist/
 Bridge/.swiftpm/
 .build/
 *.swiftpm/
+
+# Release artifacts
+CursorBridge-*.dmg
+CursorBridge-*.dmg.sha256
 
 # Xcode
 **/xcuserdata/

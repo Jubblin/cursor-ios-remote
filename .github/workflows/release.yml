@@ -9,9 +9,13 @@ permissions:
   contents: write
 
 jobs:
-  bridge:
-    name: Mac bridge binary
+  bridge-dmg:
+    name: Mac bridge DMG (${{ matrix.arch }})
     runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x86_64]
     defaults:
       run:
         shell: bash
@@ -24,43 +28,45 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Build release
+      - name: Build and package DMG
+        env:
+          ARCH: ${{ matrix.arch }}
         run: |
-          cd Bridge
-          swift build -c release
-          mkdir -p dist
-          cp .build/release/CursorBridge dist/CursorBridge
-          chmod +x dist/CursorBridge
+          chmod +x scripts/package-bridge-dmg.sh
+          ./scripts/package-bridge-dmg.sh "${GITHUB_REF_NAME}"
 
-      - name: Package archive
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          cd Bridge/dist
-          tar -czf "../../CursorBridge-${TAG}-macos-arm64.tar.gz" CursorBridge
-          shasum -a 256 "../../CursorBridge-${TAG}-macos-arm64.tar.gz" > "../../CursorBridge-${TAG}-macos-arm64.tar.gz.sha256"
-
-      - name: Upload bridge artifact
+      - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CursorBridge-macos-arm64
+          name: CursorBridge-dmg-${{ matrix.arch }}
           path: |
-            CursorBridge-*.tar.gz
-            CursorBridge-*.sha256
+            CursorBridge-*-macos-${{ matrix.arch }}.dmg
+            CursorBridge-*-macos-${{ matrix.arch }}.dmg.sha256
 
   github-release:
     name: GitHub Release
-    needs: bridge
+    needs: bridge-dmg
     runs-on: ubuntu-latest
     steps:
-      - name: Download bridge artifact
+      - name: Download DMG artifacts
         uses: actions/download-artifact@v4
         with:
-          name: CursorBridge-macos-arm64
+          path: release-assets
+          merge-multiple: true
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            CursorBridge-*.tar.gz
-            CursorBridge-*.sha256
+          files: release-assets/**
           generate_release_notes: true
+          body: |
+            ## Install (Mac)
+
+            1. Download the DMG for your Mac:
+               - **Apple Silicon (M1/M2/M3/M4):** `CursorBridge-*-macos-arm64.dmg`
+               - **Intel:** `CursorBridge-*-macos-x86_64.dmg`
+            2. Open the DMG and drag **CursorBridge** to **Applications**.
+            3. Launch from Applications. On first run, grant **Accessibility** when prompted.
+            4. Click the menu bar icon and use **Copy pairing JSON** for the iOS app.
+
+            The bridge listens on port `8742` by default. Auth token is stored at `~/.cursor-bridge/token.txt`.

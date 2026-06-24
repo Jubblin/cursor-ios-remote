@@ -30,6 +30,8 @@ On first launch:
 2. Click the menu bar icon — note **port** and **token**.
 3. Click **Copy pairing JSON** for the iOS app.
 
+**Install from release DMG:** download the matching DMG from [GitHub Releases](https://github.com/Jubblin/cursor-ios-remote/releases), open it, and drag **CursorBridge** to Applications.
+
 Optional env vars:
 
 | Variable | Default | Purpose |
@@ -136,4 +138,10 @@ brew install swiftlint swiftformat
 ./scripts/format.sh    # auto-fix formatting
 ```
 
-Tag a release with `v*` (e.g. `v1.0.0`) to publish a `CursorBridge` macOS binary on GitHub Releases.
+Tag a release with `v*` (e.g. `v1.0.0`) to publish installable **DMG** packages on GitHub Releases (Apple Silicon and Intel).
+
+Package locally:
+
+```bash
+./scripts/package-bridge-dmg.sh v1.0.0
+```
