@@ -7,6 +7,7 @@ Bridge/.swiftpm/
 *.swiftpm/
 
 # Xcode
+**/xcuserdata/
 *.xcuserdata/
 DerivedData/
 *.ipa
