@@ -19,7 +19,8 @@ final class PushNotificationService {
               let keyId = ProcessInfo.processInfo.environment["APNS_KEY_ID"],
               let teamId = ProcessInfo.processInfo.environment["APNS_TEAM_ID"],
               let topic = ProcessInfo.processInfo.environment["APNS_TOPIC"],
-              let keyData = try? Data(contentsOf: URL(fileURLWithPath: keyPath)) else {
+              let keyData = try? Data(contentsOf: URL(fileURLWithPath: keyPath))
+        else {
             print("[APNs] Skipping push — configure APNS_KEY_PATH, APNS_KEY_ID, APNS_TEAM_ID, APNS_TOPIC")
             return
         }

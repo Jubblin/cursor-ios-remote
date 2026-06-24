@@ -102,13 +102,13 @@ final class BridgeController: ObservableObject {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let controller = BridgeController()
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         NSApp.setActivationPolicy(.accessory)
         requestAccessibilityIfNeeded()
         controller.start()
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    func applicationWillTerminate(_: Notification) {
         controller.stop()
     }
 
@@ -179,11 +179,11 @@ struct MenuBarView: View {
 
     private func icon(for state: AgentSessionState) -> String {
         switch state {
-        case .awaitingApproval: return "hand.raised.fill"
-        case .running: return "bolt.fill"
-        case .idle: return "moon.fill"
-        case .error: return "exclamationmark.triangle.fill"
-        case .unknown: return "questionmark.circle"
+        case .awaitingApproval: "hand.raised.fill"
+        case .running: "bolt.fill"
+        case .idle: "moon.fill"
+        case .error: "exclamationmark.triangle.fill"
+        case .unknown: "questionmark.circle"
         }
     }
 }

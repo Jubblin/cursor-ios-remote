@@ -86,7 +86,7 @@ final class BridgeServer {
             var buffer = buffer
             if let data { buffer.append(data) }
             guard let headerEnd = buffer.range(of: Data("\r\n\r\n".utf8)) else {
-                self.receiveHTTP(on: connection, buffer: buffer)
+                receiveHTTP(on: connection, buffer: buffer)
                 return
             }
             let headerData = buffer.subdata(in: 0 ..< headerEnd.lowerBound)
@@ -117,14 +117,14 @@ final class BridgeServer {
             }
 
             if headers["upgrade"]?.lowercased() == "websocket" {
-                self.upgradeWebSocket(connection: connection, headers: headers, path: path)
+                upgradeWebSocket(connection: connection, headers: headers, path: path)
                 return
             }
 
             let contentLength = Int(headers["content-length"] ?? "0") ?? 0
             let body = bodyData
             if body.count < contentLength {
-                self.readRemainingBody(
+                readRemainingBody(
                     connection: connection,
                     needed: contentLength - body.count,
                     existing: body,
@@ -135,7 +135,7 @@ final class BridgeServer {
                 return
             }
 
-            self.route(
+            route(
                 connection: connection,
                 method: method,
                 path: path,
@@ -157,7 +157,7 @@ final class BridgeServer {
             guard let self else { return }
             var body = existing
             if let data { body.append(data) }
-            self.route(connection: connection, method: method, path: path, headers: headers, body: body)
+            route(connection: connection, method: method, path: path, headers: headers, body: body)
         }
     }
 
@@ -201,8 +201,8 @@ final class BridgeServer {
             respondJSON(connection, status: 200, value: ProjectListResponse(
                 projects: catalog.listProjects(includeArchived: includeArchived)
             ))
-        case ("GET", let p) where p.hasPrefix("/projects/") && p.hasSuffix("/conversations"):
-            let parts = p.split(separator: "/").map(String.init)
+        case let ("GET", projectPath) where projectPath.hasPrefix("/projects/") && projectPath.hasSuffix("/conversations"):
+            let parts = projectPath.split(separator: "/").map(String.init)
             guard parts.count == 3 else {
                 respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid path"))
                 return
@@ -300,13 +300,13 @@ final class BridgeServer {
         """
         connection.send(content: response.data(using: .utf8), completion: .contentProcessed { [weak self] _ in
             guard let self else { return }
-            self.websockets[ObjectIdentifier(connection)] = connection
-            let status = self.automation.detectSessionStatus()
+            websockets[ObjectIdentifier(connection)] = connection
+            let status = automation.detectSessionStatus()
             if let data = try? JSONEncoder().encode(WebSocketEvent(type: "status_changed", status: status)),
                let json = String(data: data, encoding: .utf8) {
                 connection.send(content: Self.wsTextFrame(json), completion: .contentProcessed { _ in })
             }
-            self.listenWebSocket(connection)
+            listenWebSocket(connection)
         })
     }
 
@@ -321,7 +321,7 @@ final class BridgeServer {
         }
     }
 
-    private func respondJSON<T: Encodable>(_ connection: NWConnection, status: Int, value: T) {
+    private func respondJSON(_ connection: NWConnection, status: Int, value: some Encodable) {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         guard let data = try? encoder.encode(value) else {

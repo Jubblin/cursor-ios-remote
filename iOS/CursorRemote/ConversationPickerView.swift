@@ -32,7 +32,7 @@ struct ConversationPickerView: View {
                 .disabled(!client.isConnected)
             } else {
                 Picker("Agent", selection: agentBinding) {
-                    Text("Select agent session").tag(Optional<String>.none)
+                    Text("Select agent session").tag(String?.none)
                     ForEach(client.agents) { agent in
                         Text(agentPickerLabel(agent))
                             .tag(Optional(agent.id))

@@ -9,21 +9,21 @@ enum AgentSessionState: String, Codable, Sendable {
 
     var displayName: String {
         switch self {
-        case .unknown: return "Unknown"
-        case .idle: return "Idle"
-        case .running: return "Running"
-        case .awaitingApproval: return "Needs approval"
-        case .error: return "Error"
+        case .unknown: "Unknown"
+        case .idle: "Idle"
+        case .running: "Running"
+        case .awaitingApproval: "Needs approval"
+        case .error: "Error"
         }
     }
 
     var symbolName: String {
         switch self {
-        case .awaitingApproval: return "hand.raised.fill"
-        case .running: return "bolt.fill"
-        case .idle: return "moon.fill"
-        case .error: return "exclamationmark.triangle.fill"
-        case .unknown: return "questionmark.circle"
+        case .awaitingApproval: "hand.raised.fill"
+        case .running: "bolt.fill"
+        case .idle: "moon.fill"
+        case .error: "exclamationmark.triangle.fill"
+        case .unknown: "questionmark.circle"
         }
     }
 }

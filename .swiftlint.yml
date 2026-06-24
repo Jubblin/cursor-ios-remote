@@ -1,0 +1,56 @@
+included:
+  - Bridge/Sources
+  - iOS/CursorRemote
+  - Shared
+
+excluded:
+  - Bridge/.build
+  - iOS/CursorRemote.xcodeproj
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 2
+  excluded:
+    - id
+    - ok
+
+type_name:
+  min_length: 2
+
+cyclomatic_complexity:
+  warning: 20
+  error: 30
+
+function_body_length:
+  warning: 100
+  error: 120
+
+type_body_length:
+  warning: 400
+  error: 500
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+reporter: xcode
+
+opt_in_rules:
+  - empty_count
+  - explicit_init
+  - fatal_error_message
+  - first_where
+  - overridden_super_call
+  - private_action
+  - private_outlet
+  - redundant_nil_coalescing
+  - toggle_bool
+
+disabled_rules:
+  - trailing_whitespace
+  - todo
+  - opening_brace
+  - trailing_comma
+  - for_where
+  - line_length

@@ -1,0 +1,6 @@
+--swiftversion 5.9
+--indent 4
+--maxwidth 140
+--self remove
+--importgrouping testable-bottom
+--disable redundantSendable,andOperator,wrapMultilineStatementBraces

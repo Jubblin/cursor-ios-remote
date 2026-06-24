@@ -122,6 +122,18 @@ Shared/           Shared protocol types (reference)
 
 ## CI
 
-GitHub Actions builds the Mac bridge and iOS app on every push/PR to `main`.
+GitHub Actions runs on every push/PR to `main`:
+
+1. **Lint** — SwiftFormat + SwiftLint (`--strict`)
+2. **Mac bridge** — `swift build` (release + debug)
+3. **iOS app** — XcodeGen + simulator build
+
+Run locally:
+
+```bash
+brew install swiftlint swiftformat
+./scripts/lint.sh      # check
+./scripts/format.sh    # auto-fix formatting
+```
 
 Tag a release with `v*` (e.g. `v1.0.0`) to publish a `CursorBridge` macOS binary on GitHub Releases.

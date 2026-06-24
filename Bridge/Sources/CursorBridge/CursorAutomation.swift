@@ -197,8 +197,8 @@ final class CursorAutomation {
             if AXUIElementCopyAttributeValue(window, kAXTitleAttribute as CFString, &titleValue) == .success,
                let title = titleValue as? String,
                title.localizedCaseInsensitiveContains("agent")
-                || title.localizedCaseInsensitiveContains("composer")
-                || title.localizedCaseInsensitiveContains("chat") {
+               || title.localizedCaseInsensitiveContains("composer")
+               || title.localizedCaseInsensitiveContains("chat") {
                 return true
             }
         }

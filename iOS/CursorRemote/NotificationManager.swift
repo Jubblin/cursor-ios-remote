@@ -1,6 +1,6 @@
 import Foundation
-import UserNotifications
 import UIKit
+import UserNotifications
 
 @MainActor
 final class NotificationManager: NSObject, ObservableObject {
@@ -28,15 +28,15 @@ final class NotificationManager: NSObject, ObservableObject {
 
 extension NotificationManager: UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification
+        _: UNUserNotificationCenter,
+        willPresent _: UNNotification
     ) async -> UNNotificationPresentationOptions {
         [.banner, .sound]
     }
 
     nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse
+        _: UNUserNotificationCenter,
+        didReceive _: UNNotificationResponse
     ) async {
         // Deep link handled by app opening to session view
     }

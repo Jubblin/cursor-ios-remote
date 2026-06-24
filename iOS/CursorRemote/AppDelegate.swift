@@ -2,7 +2,7 @@ import UIKit
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(
-        _ application: UIApplication,
+        _: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
         NotificationCenter.default.post(
@@ -13,7 +13,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     func application(
-        _ application: UIApplication,
+        _: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
         print("[APNs] Registration failed: \(error)")

@@ -11,8 +11,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: macos-15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install linters
+        run: brew install swiftlint swiftformat
+
+      - name: SwiftFormat
+        run: swiftformat --lint Bridge/Sources iOS/CursorRemote Shared
+
+      - name: SwiftLint
+        run: swiftlint lint --strict --config .swiftlint.yml
+
   bridge:
     name: Mac bridge
+    needs: lint
     runs-on: macos-15
     defaults:
       run:
@@ -38,6 +58,7 @@ jobs:
 
   ios:
     name: iOS app
+    needs: lint
     runs-on: macos-15
     defaults:
       run:

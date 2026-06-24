@@ -20,9 +20,9 @@ final class ConversationCatalog {
                 .appendingPathComponent("agent-transcripts")
             guard FileManager.default.fileExists(atPath: transcriptsRoot.path),
                   let sessions = try? FileManager.default.contentsOfDirectory(
-                    at: transcriptsRoot,
-                    includingPropertiesForKeys: [.contentModificationDateKey],
-                    options: [.skipsHiddenFiles]
+                      at: transcriptsRoot,
+                      includingPropertiesForKeys: [.contentModificationDateKey],
+                      options: [.skipsHiddenFiles]
                   ) else { continue }
 
             let resolved = slugIndex[slug]
@@ -197,7 +197,8 @@ final class ConversationCatalog {
 
     private func workspaceFolderPath(_ workspaceJSON: URL) -> String? {
         guard let data = try? Data(contentsOf: workspaceJSON),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else {
             return nil
         }
         if let folder = json["folder"] as? String {
@@ -235,7 +236,8 @@ final class ConversationCatalog {
         guard let jsonText = sqliteString(dbPath: dbPath, key: "composer.composerData"),
               let data = jsonText.data(using: .utf8),
               let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let allComposers = root["allComposers"] as? [[String: Any]] else {
+              let allComposers = root["allComposers"] as? [[String: Any]]
+        else {
             return ([], [])
         }
 
@@ -253,13 +255,12 @@ final class ConversationCatalog {
 
             let name = (item["name"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
             let subtitle = item["subtitle"] as? String
-            let displayName: String
-            if let name, !name.isEmpty {
-                displayName = name
+            let displayName: String = if let name, !name.isEmpty {
+                name
             } else if let subtitle, !subtitle.isEmpty {
-                displayName = subtitle
+                subtitle
             } else {
-                displayName = "Untitled chat"
+                "Untitled chat"
             }
 
             return CursorConversation(
@@ -329,12 +330,14 @@ final class ConversationCatalog {
     private func transcriptTitle(_ jsonl: URL) -> String? {
         guard let handle = try? FileHandle(forReadingFrom: jsonl),
               let lineData = try? handle.readToEnd(),
-              let line = String(data: lineData, encoding: .utf8)?.split(separator: "\n").first else {
+              let line = String(data: lineData, encoding: .utf8)?.split(separator: "\n").first
+        else {
             return nil
         }
         guard let json = try? JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any],
               let message = json["message"] as? [String: Any],
-              let content = message["content"] as? [[String: Any]] else {
+              let content = message["content"] as? [[String: Any]]
+        else {
             return nil
         }
         for block in content {

@@ -163,9 +163,11 @@ struct SettingsView: View {
                 }
 
                 Section("Away from home") {
-                    Text("Use your Mac's Tailscale MagicDNS name (e.g. macbook.tailnet.ts.net). Ensure Tailscale is running on both devices.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "Use your Mac's Tailscale MagicDNS name (e.g. macbook.tailnet.ts.net). Ensure Tailscale is running on both devices."
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Settings")

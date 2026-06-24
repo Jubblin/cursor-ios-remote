@@ -13,9 +13,9 @@ final class BridgeClient: ObservableObject {
     private let session = URLSession(configuration: .default)
     private var settings: BridgeSettings
     private let decoder: JSONDecoder = {
-        let d = JSONDecoder()
-        d.dateDecodingStrategy = .iso8601
-        return d
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
     }()
 
     init(settings: BridgeSettings) {
@@ -48,11 +48,11 @@ final class BridgeClient: ObservableObject {
         do {
             let status: SessionStatus = try await get(path: "/session/status")
             self.status = status
-            self.isConnected = true
-            self.lastError = nil
+            isConnected = true
+            lastError = nil
         } catch {
-            self.isConnected = false
-            self.lastError = error.localizedDescription
+            isConnected = false
+            lastError = error.localizedDescription
         }
     }
 
@@ -114,7 +114,7 @@ final class BridgeClient: ObservableObject {
         await loadAgents()
     }
 
-    func selectConversation(projectId: String, conversationId: String) async {
+    func selectConversation(projectId _: String, conversationId: String) async {
         await selectAgent(agentId: conversationId)
     }
 
@@ -149,8 +149,8 @@ final class BridgeClient: ObservableObject {
         task.receive { [weak self] result in
             guard let self else { return }
             switch result {
-            case .success(let message):
-                if case .string(let text) = message,
+            case let .success(message):
+                if case let .string(text) = message,
                    let data = text.data(using: .utf8),
                    let event = try? JSONDecoder().decode(WebSocketEvent.self, from: data),
                    let status = event.status {
@@ -159,7 +159,7 @@ final class BridgeClient: ObservableObject {
                         self.isConnected = true
                     }
                 }
-                self.listen(task)
+                listen(task)
             case .failure:
                 Task { @MainActor in
                     self.isConnected = false
@@ -189,7 +189,7 @@ final class BridgeClient: ObservableObject {
         return try decoder.decode(T.self, from: data)
     }
 
-    private func postEncodable<T: Decodable, B: Encodable>(path: String, body: B) async throws -> T {
+    private func postEncodable<T: Decodable>(path: String, body: some Encodable) async throws -> T {
         guard let base = settings.baseURL else { throw BridgeError.misconfigured }
         var request = URLRequest(url: base.appendingPathComponent(path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))))
         request.httpMethod = "POST"
@@ -218,9 +218,9 @@ enum BridgeError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .misconfigured: return "Bridge not configured"
-        case .badResponse: return "Invalid server response"
-        case .http(let code, let body): return "HTTP \(code): \(body)"
+        case .misconfigured: "Bridge not configured"
+        case .badResponse: "Invalid server response"
+        case let .http(code, body): "HTTP \(code): \(body)"
         }
     }
 }
