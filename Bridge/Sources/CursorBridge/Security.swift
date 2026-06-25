@@ -3,7 +3,7 @@ import Foundation
 enum BridgeSecurity {
     static let maxHTTPBodyBytes = 65536
     static let maxDeviceTokens = 10
-    static let expectedIOSBundleId = "com.cursorremote.app"
+    static let expectedIOSBundleId = "com.jubblin.app.cursorremote"
 
     /// Listen address. Set `CURSOR_BRIDGE_BIND_ALL=1` to bind all interfaces (default for remote iPhone use).
     /// Set `CURSOR_BRIDGE_BIND=127.0.0.1` or a Tailscale IP to restrict exposure.

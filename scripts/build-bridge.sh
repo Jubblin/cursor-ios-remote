@@ -9,10 +9,12 @@ APP_DIR="$ROOT/Bridge/.build/CursorBridge.app"
 VERSION="$(git -C "$ROOT" describe --tags --always 2>/dev/null || echo "0.0.0-dev")"
 VERSION="${VERSION#v}"
 
-mkdir -p "$APP_DIR/Contents/MacOS"
+mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources"
 cp "$BINARY" "$APP_DIR/Contents/MacOS/CursorBridge"
 chmod +x "$APP_DIR/Contents/MacOS/CursorBridge"
 sed "s/VERSION_PLACEHOLDER/${VERSION}/g" "$ROOT/Bridge/Resources/Info.plist" > "$APP_DIR/Contents/Info.plist"
+cp "$ROOT/Bridge/Resources/AppIcon.icns" "$APP_DIR/Contents/Resources/"
+cp "$ROOT/Bridge/Resources/MenuBarIcon.png" "$ROOT/Bridge/Resources/MenuBarIcon@2x.png" "$APP_DIR/Contents/Resources/"
 
 echo "Built: $BINARY"
 echo "App bundle: $APP_DIR"

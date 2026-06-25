@@ -87,7 +87,7 @@ final class BridgeClient: ObservableObject {
         do {
             let _: ActionResponse = try await post(
                 path: "/devices/register",
-                body: ["deviceToken": token, "bundleId": Bundle.main.bundleIdentifier ?? "com.cursorremote.app"]
+                body: ["deviceToken": token, "bundleId": Bundle.main.bundleIdentifier ?? "com.jubblin.app.cursorremote"]
             )
         } catch {
             lastError = error.localizedDescription

@@ -34,12 +34,14 @@ cd "$BRIDGE_DIR"
 
 echo "==> Creating app bundle"
 rm -rf "$APP_BUNDLE"
-mkdir -p "$APP_BUNDLE/Contents/MacOS"
+mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
 
 cp "$BINARY" "$APP_BUNDLE/Contents/MacOS/CursorBridge"
 chmod +x "$APP_BUNDLE/Contents/MacOS/CursorBridge"
 
 sed "s/VERSION_PLACEHOLDER/${VERSION}/g" "$BRIDGE_DIR/Resources/Info.plist" > "$APP_BUNDLE/Contents/Info.plist"
+cp "$BRIDGE_DIR/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/"
+cp "$BRIDGE_DIR/Resources/MenuBarIcon.png" "$BRIDGE_DIR/Resources/MenuBarIcon@2x.png" "$APP_BUNDLE/Contents/Resources/"
 
 if command -v codesign >/dev/null 2>&1; then
   echo "==> Ad-hoc signing app bundle"

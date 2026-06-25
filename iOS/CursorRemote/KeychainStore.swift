@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 enum KeychainStore {
-    private static let service = "com.cursorremote.bridge"
+    private static let service = "com.jubblin.app.cursorremote"
 
     static func saveToken(_ token: String) {
         if token.isEmpty {

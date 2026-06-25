@@ -42,7 +42,7 @@ Optional env vars:
 | `APNS_KEY_PATH` | — | APNs `.p8` key for push notifications |
 | `APNS_KEY_ID` | — | Apple key ID |
 | `APNS_TEAM_ID` | — | Apple team ID |
-| `APNS_TOPIC` | — | iOS bundle ID (`com.cursorremote.app`) |
+| `APNS_TOPIC` | — | iOS bundle ID (`com.jubblin.app.cursorremote`) |
 
 Token is stored at `~/.cursor-bridge/token.txt` (file mode `0600`). The menu bar UI shows only a token suffix; use **Copy pairing JSON** to transfer credentials to the iOS app.
 
@@ -119,7 +119,7 @@ The Mac bridge scans `~/.cursor/projects/*/agent-transcripts/` and maps each ses
 - **Auth** — Bearer token required on all endpoints except `GET /health`. Comparison uses constant-time equality; failed attempts are rate-limited per client (HTTP 429).
 - **Bind address** — By default the bridge listens on all interfaces (`0.0.0.0`) so your iPhone can reach it over Tailscale/LAN. Set `CURSOR_BRIDGE_BIND=127.0.0.1` to restrict to localhost, or set a specific Tailscale IP.
 - **Request bodies** — Capped at 64 KB (HTTP 413).
-- **Device registration** — iOS bundle ID must match `com.cursorremote.app`; at most 10 APNs device tokens per bridge instance.
+- **Device registration** — iOS bundle ID must match `com.jubblin.app.cursorremote`; at most 10 APNs device tokens per bridge instance.
 - **Approve automation** — Approve only clicks a matching button (no Return-key fallback). Reject may still use Escape as a fallback.
 - **iOS token storage** — Auth token is stored in the Keychain, not UserDefaults.
 

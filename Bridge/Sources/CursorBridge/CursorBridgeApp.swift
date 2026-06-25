@@ -7,11 +7,27 @@ struct CursorBridgeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("Cursor Bridge", systemImage: "iphone.and.arrow.forward") {
+        MenuBarExtra {
             MenuBarView()
                 .environmentObject(appDelegate.controller)
+        } label: {
+            Image(nsImage: BridgeIcons.menuBarImage)
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+private enum BridgeIcons {
+    static var menuBarImage: NSImage {
+        if let url = Bundle.main.url(forResource: "MenuBarIcon", withExtension: "png"),
+           let image = NSImage(contentsOf: url)
+        {
+            image.isTemplate = true
+            return image
+        }
+        let fallback = NSImage(systemSymbolName: "iphone.and.arrow.forward", accessibilityDescription: "Cursor Bridge")!
+        fallback.isTemplate = true
+        return fallback
     }
 }
 
