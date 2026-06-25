@@ -76,6 +76,7 @@ All endpoints except `/health` require `Authorization: Bearer <token>`.
 | GET | `/health` | Bridge health check |
 | GET | `/pairing` | Hostname, port, token |
 | GET | `/agents` | Agent conversations across all projects |
+| GET | `/agents/{id}/history?limit=20` | Recent transcript messages for an agent session |
 | POST | `/agents/select` | `{"agentId":"..."}` — open session on Mac |
 | GET | `/projects` | List workspace projects (legacy) |
 | GET | `/projects/{id}/conversations` | List conversations for a project (legacy) |
@@ -103,7 +104,7 @@ When the bridge detects `awaiting_approval`, it sends an APNs alert to registere
 The Mac bridge scans `~/.cursor/projects/*/agent-transcripts/` and maps each session to its Cursor workspace. On iOS:
 
 1. Tap **Load agents** (or the reload icon).
-2. Pick an **agent session** from the flat list.
+2. Pick a session — recent transcript messages load automatically below the picker.
 3. Tap **Open on Mac** — the bridge opens that workspace in Cursor and selects the chat.
 
 ## Limitations

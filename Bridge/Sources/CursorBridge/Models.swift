@@ -77,6 +77,21 @@ struct SelectAgentRequest: Codable, Sendable {
     let agentId: String
 }
 
+struct TranscriptMessage: Codable, Sendable, Identifiable {
+    let id: Int
+    let role: String
+    let text: String
+
+    var isUser: Bool {
+        role == "user"
+    }
+}
+
+struct AgentHistoryResponse: Codable, Sendable {
+    let agentId: String
+    let messages: [TranscriptMessage]
+}
+
 struct CursorProject: Codable, Sendable, Identifiable {
     let id: String
     let name: String

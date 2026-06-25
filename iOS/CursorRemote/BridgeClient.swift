@@ -7,7 +7,10 @@ final class BridgeClient: ObservableObject {
     @Published var lastError: String?
     @Published var lastActionMessage: String?
     @Published var agents: [AgentConversation] = []
+    @Published var agentHistory: [TranscriptMessage] = []
+    @Published var agentHistoryForId: String?
     @Published var isLoadingCatalog = false
+    @Published var isLoadingHistory = false
     @Published var isPerformingAction = false
 
     private var webSocketTask: URLSessionWebSocketTask?
@@ -89,6 +92,26 @@ final class BridgeClient: ObservableObject {
         } catch {
             lastError = error.localizedDescription
         }
+    }
+
+    func loadAgentHistory(agentId: String, limit: Int = 20) async {
+        isLoadingHistory = true
+        defer { isLoadingHistory = false }
+        do {
+            let response: AgentHistoryResponse = try await get(path: "/agents/\(agentId)/history?limit=\(limit)")
+            agentHistory = response.messages
+            agentHistoryForId = agentId
+            lastError = nil
+        } catch {
+            agentHistory = []
+            agentHistoryForId = agentId
+            lastError = error.localizedDescription
+        }
+    }
+
+    func clearAgentHistory() {
+        agentHistory = []
+        agentHistoryForId = nil
     }
 
     func loadAgents() async {

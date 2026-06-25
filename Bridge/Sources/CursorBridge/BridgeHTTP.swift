@@ -11,6 +11,16 @@ enum BridgeHTTP {
         }
     }
 
+    static func queryInt(path: String, name: String) -> Int? {
+        guard let query = path.split(separator: "?", maxSplits: 1).dropFirst().first else { return nil }
+        for part in query.split(separator: "&") {
+            let pieces = part.split(separator: "=", maxSplits: 1).map(String.init)
+            guard pieces.first == name, pieces.count == 2, let value = Int(pieces[1]) else { continue }
+            return value
+        }
+        return nil
+    }
+
     static func respondJSON(_ connection: NWConnection, status: Int, value: some Encodable) {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601

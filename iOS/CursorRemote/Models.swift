@@ -91,6 +91,25 @@ struct SelectAgentRequest: Codable {
     let agentId: String
 }
 
+struct TranscriptMessage: Codable, Identifiable, Hashable {
+    let id: Int
+    let role: String
+    let text: String
+
+    var isUser: Bool {
+        role == "user"
+    }
+
+    var roleLabel: String {
+        isUser ? "You" : "Agent"
+    }
+}
+
+struct AgentHistoryResponse: Codable {
+    let agentId: String
+    let messages: [TranscriptMessage]
+}
+
 struct CursorProject: Codable, Identifiable, Hashable {
     let id: String
     let name: String
