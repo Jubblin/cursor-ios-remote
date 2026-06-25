@@ -60,11 +60,13 @@ final class SettingsStore: ObservableObject {
         }
     }
 
-    func importPairingJSON(_ json: String) {
+    func importPairingJSON(_ json: String) -> Bool {
         guard let data = json.data(using: .utf8),
               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let hostname = object["hostname"] as? String,
-              let token = object["token"] as? String else { return }
+              let token = object["token"] as? String,
+              !hostname.isEmpty,
+              !token.isEmpty else { return false }
         let port = object["port"] as? Int ?? 8742
         let useHTTPS = (object["useHTTPS"] as? Bool) ?? settings.useHTTPS
         settings = BridgeSettings(
@@ -74,6 +76,7 @@ final class SettingsStore: ObservableObject {
             useHTTPS: useHTTPS,
             selectedAgentId: settings.selectedAgentId
         )
+        return true
     }
 
     private func save() {

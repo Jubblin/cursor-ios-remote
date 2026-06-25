@@ -8,13 +8,15 @@ final class BridgeServer {
     private let automation = CursorAutomation()
     private let catalog = ConversationCatalog()
     private let pushService = PushNotificationService()
-    private let startedAt = Date()
     private let authLimiter = AuthRateLimiter()
     private var listener: NWListener?
     private var websockets: [ObjectIdentifier: NWConnection] = [:]
     private var pollTimer: DispatchSourceTimer?
     private var lastStatus: SessionStatus?
     private let queue = DispatchQueue(label: "cursor.bridge.server")
+
+    var onStatusUpdate: ((SessionStatus) -> Void)?
+    private(set) var currentStatus: SessionStatus?
 
     init(port: Int, authToken: String) {
         self.port = UInt16(port)
@@ -52,9 +54,11 @@ final class BridgeServer {
         websockets.removeAll()
     }
 
+    private var statusPollInFlight = false
+
     private func startPolling() {
         let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now(), repeating: 2)
+        timer.schedule(deadline: .now() + 1, repeating: 4)
         timer.setEventHandler { [weak self] in
             self?.pollStatus()
         }
@@ -63,13 +67,25 @@ final class BridgeServer {
     }
 
     private func pollStatus() {
-        let status = automation.detectSessionStatus()
-        if lastStatus?.state != status.state {
-            lastStatus = status
-            broadcast(status)
-            if status.state == .awaitingApproval {
-                Task { await pushService.sendApprovalRequest(detail: status.detail) }
-            }
+        guard !statusPollInFlight else { return }
+        statusPollInFlight = true
+        defer { statusPollInFlight = false }
+        publishStatus(automation.detectSessionStatus(), shouldBroadcast: false)
+    }
+
+    private func refreshStatusAfterAction() {
+        publishStatus(automation.detectSessionStatus(), shouldBroadcast: true)
+    }
+
+    private func publishStatus(_ status: SessionStatus, shouldBroadcast: Bool) {
+        currentStatus = status
+        onStatusUpdate?(status)
+        let stateChanged = lastStatus?.state != status.state
+        guard shouldBroadcast || stateChanged else { return }
+        lastStatus = status
+        broadcast(status)
+        if status.state == .awaitingApproval {
+            Task { await pushService.sendApprovalRequest(detail: status.detail) }
         }
     }
 
@@ -210,7 +226,7 @@ final class BridgeServer {
                 agents: catalog.listAgentConversations()
             ))
         case ("GET", "/projects"):
-            let includeArchived = queryFlag(path: path, name: "include_archived")
+            let includeArchived = BridgeHTTP.queryFlag(path: path, name: "include_archived")
             BridgeHTTP.respondJSON(connection, status: 200, value: ProjectListResponse(
                 projects: catalog.listProjects(includeArchived: includeArchived)
             ))
@@ -225,9 +241,15 @@ final class BridgeServer {
                 BridgeHTTP.respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid body"))
             }
         case ("POST", "/session/approve"):
-            BridgeHTTP.respondJSON(connection, status: 200, value: automation.approve())
+            let result = automation.approve()
+            print("[Bridge] approve: success=\(result.success) message=\(result.message)")
+            BridgeHTTP.respondJSON(connection, status: 200, value: result)
+            queue.async { [weak self] in self?.refreshStatusAfterAction() }
         case ("POST", "/session/reject"):
-            BridgeHTTP.respondJSON(connection, status: 200, value: automation.reject())
+            let result = automation.reject()
+            print("[Bridge] reject: success=\(result.success) message=\(result.message)")
+            BridgeHTTP.respondJSON(connection, status: 200, value: result)
+            queue.async { [weak self] in self?.refreshStatusAfterAction() }
         case ("POST", "/agents/select"):
             if let req = try? JSONDecoder().decode(SelectAgentRequest.self, from: body),
                let agent = catalog.agent(id: req.agentId),
@@ -288,7 +310,7 @@ final class BridgeServer {
             return
         }
         let projectId = parts[1]
-        let includeArchived = queryFlag(path: path, name: "include_archived")
+        let includeArchived = BridgeHTTP.queryFlag(path: path, name: "include_archived")
         if let list = catalog.listConversations(projectId: projectId, includeArchived: includeArchived) {
             BridgeHTTP.respondJSON(connection, status: 200, value: list)
         } else {
@@ -325,14 +347,6 @@ final class BridgeServer {
             return "\(endpoint)"
         }
         return "\(ObjectIdentifier(connection))"
-    }
-
-    private func queryFlag(path: String, name: String) -> Bool {
-        guard let query = path.split(separator: "?", maxSplits: 1).dropFirst().first else { return false }
-        return query.split(separator: "&").contains { part in
-            let pieces = part.split(separator: "=", maxSplits: 1).map(String.init)
-            return pieces.first == name && (pieces.count < 2 || pieces[1] == "1" || pieces[1].lowercased() == "true")
-        }
     }
 
     private func upgradeWebSocket(connection: NWConnection, headers: [String: String], path: String) {

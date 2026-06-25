@@ -27,8 +27,8 @@ chmod +x scripts/*.sh
 On first launch:
 
 1. Grant **Accessibility** permission when prompted (required for approve/reject automation).
-2. Click the menu bar icon — note **port** and **token**.
-3. Click **Copy pairing JSON** for the iOS app.
+2. Click the menu bar icon — a **QR code** appears when the bridge is running. Scan it from the iOS app, or use **Copy pairing JSON**.
+3. On iPhone: **Settings → Scan QR code** (or paste JSON manually).
 
 **Install from release DMG:** download the matching DMG from [GitHub Releases](https://github.com/Jubblin/cursor-ios-remote/releases), open it, and drag **CursorBridge** to Applications.
 
@@ -58,7 +58,7 @@ In Xcode:
 
 1. Select your **Development Team** for signing.
 2. Build and run on your iPhone (or TestFlight).
-3. Open **Settings** → paste pairing JSON from the Mac, or enter hostname + token manually.
+3. Open **Settings** → **Scan QR code** (point at the Mac menu bar QR), or paste pairing JSON / enter hostname + token manually.
 4. For school pickup: use your Mac's **Tailscale hostname** (e.g. `macbook.tailnet-name.ts.net`).
 
 ### 3. Tailscale (away from home)

@@ -8,9 +8,10 @@ final class BridgeClient: ObservableObject {
     @Published var lastActionMessage: String?
     @Published var agents: [AgentConversation] = []
     @Published var isLoadingCatalog = false
+    @Published var isPerformingAction = false
 
     private var webSocketTask: URLSessionWebSocketTask?
-    private let session = URLSession(configuration: .default)
+    private let session: URLSession
     private var settings: BridgeSettings
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
@@ -20,6 +21,10 @@ final class BridgeClient: ObservableObject {
 
     init(settings: BridgeSettings) {
         self.settings = settings
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 90
+        config.waitsForConnectivity = true
+        session = URLSession(configuration: config)
     }
 
     func updateSettings(_ settings: BridgeSettings) {
@@ -119,13 +124,32 @@ final class BridgeClient: ObservableObject {
     }
 
     private func performAction(path: String) async {
+        isPerformingAction = true
+        lastError = nil
+        defer { isPerformingAction = false }
+
+        let awaitingBefore = status?.state == .awaitingApproval
+
         do {
-            let response: ActionResponse = try await post(path: path, body: [String: String]())
+            let response: ActionResponse = try await post(path: path, body: [String: String](), isAction: true)
             lastActionMessage = response.message
-            if !response.success { lastError = response.message }
+            if response.success {
+                lastError = nil
+            } else {
+                lastError = response.message
+            }
             await refreshStatus()
         } catch {
-            lastError = error.localizedDescription
+            await refreshStatus()
+            if awaitingBefore, status?.state != .awaitingApproval {
+                lastActionMessage = "Action completed on Mac"
+                lastError = nil
+            } else if let urlError = error as? URLError, urlError.code == .timedOut {
+                lastError = "Timed out waiting for Mac — check Cursor on your Mac"
+            } else {
+                lastError = error.localizedDescription
+                lastActionMessage = nil
+            }
         }
     }
 
@@ -177,13 +201,16 @@ final class BridgeClient: ObservableObject {
         return try decoder.decode(T.self, from: data)
     }
 
-    private func post<T: Decodable>(path: String, body: [String: String]) async throws -> T {
+    private func post<T: Decodable>(path: String, body: [String: String], isAction: Bool = false) async throws -> T {
         guard let base = settings.baseURL else { throw BridgeError.misconfigured }
         var request = URLRequest(url: base.appendingPathComponent(path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(settings.token)", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        if isAction {
+            request.timeoutInterval = 90
+        }
         let (data, response) = try await session.data(for: request)
         try validate(response: response, data: data)
         return try decoder.decode(T.self, from: data)

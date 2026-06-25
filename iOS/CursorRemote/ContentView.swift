@@ -5,29 +5,31 @@ struct ContentView: View {
     @EnvironmentObject private var settings: SettingsStore
     @State private var prompt = ""
     @State private var showSettings = false
+    @FocusState private var isPromptFocused: Bool
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                ConversationPickerView()
-                statusCard
-                if client.status?.state == .awaitingApproval {
-                    approvalButtons
+            ScrollView {
+                VStack(spacing: 20) {
+                    ConversationPickerView()
+                    statusCard
+                    if client.status?.state == .awaitingApproval {
+                        approvalButtons
+                    }
+                    if let message = client.lastActionMessage, client.status?.state != .awaitingApproval {
+                        Text(message)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let error = client.lastError, client.status?.state != .awaitingApproval {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                 }
-                promptSection
-                if let message = client.lastActionMessage {
-                    Text(message)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                if let error = client.lastError {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-                Spacer()
+                .padding()
             }
-            .padding()
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Cursor Remote")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -43,6 +45,15 @@ struct ContentView: View {
                         Image(systemName: "arrow.clockwise")
                     }
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isPromptFocused = false }
+                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                promptSection
+                    .padding()
+                    .background(.bar)
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
@@ -83,24 +94,46 @@ struct ContentView: View {
     }
 
     private var approvalButtons: some View {
-        HStack(spacing: 16) {
-            Button(role: .destructive) {
-                Task { await client.reject() }
-            } label: {
-                Label("Reject", systemImage: "xmark.circle.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
+        VStack(spacing: 12) {
+            HStack(spacing: 16) {
+                Button(role: .destructive) {
+                    Task { await client.reject() }
+                } label: {
+                    Label("Reject", systemImage: "xmark.circle.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+                .disabled(client.isPerformingAction || !client.isConnected)
 
-            Button {
-                Task { await client.approve() }
-            } label: {
-                Label("Approve", systemImage: "checkmark.circle.fill")
-                    .frame(maxWidth: .infinity)
+                Button {
+                    Task { await client.approve() }
+                } label: {
+                    Label("Approve", systemImage: "checkmark.circle.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
+                .disabled(client.isPerformingAction || !client.isConnected)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
+
+            if client.isPerformingAction {
+                ProgressView("Sending to Mac…")
+                    .font(.caption)
+            }
+
+            if let message = client.lastActionMessage {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            if let error = client.lastError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+            }
         }
     }
 
@@ -108,17 +141,24 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Follow-up prompt")
                 .font(.headline)
-            TextField("Steer the agent…", text: $prompt, axis: .vertical)
-                .lineLimit(3 ... 6)
+            TextField("Steer the agent…", text: $prompt)
                 .textFieldStyle(.roundedBorder)
-            Button("Send") {
-                let text = prompt
-                prompt = ""
-                Task { await client.sendPrompt(text) }
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !client.isConnected)
+                .focused($isPromptFocused)
+                .submitLabel(.send)
+                .onSubmit(sendPrompt)
+            Button("Send", action: sendPrompt)
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity)
+                .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !client.isConnected)
         }
+    }
+
+    private func sendPrompt() {
+        let text = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        prompt = ""
+        isPromptFocused = false
+        Task { await client.sendPrompt(text) }
     }
 
     private var connectionBadge: some View {
@@ -136,6 +176,8 @@ struct SettingsView: View {
     @EnvironmentObject private var settings: SettingsStore
     @Environment(\.dismiss) private var dismiss
     @State private var pairingPaste = ""
+    @State private var showScanner = false
+    @State private var pairingMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -150,15 +192,34 @@ struct SettingsView: View {
                 }
 
                 Section("Quick pair") {
-                    Text("Paste pairing JSON from the Mac menu bar app")
+                    if QRScannerView.isAvailable {
+                        Button {
+                            pairingMessage = nil
+                            showScanner = true
+                        } label: {
+                            Label("Scan QR code", systemImage: "qrcode.viewfinder")
+                        }
+                    }
+
+                    Text("Or paste pairing JSON from the Mac menu bar app")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     TextField("{\"hostname\":\"...\",\"port\":8742,\"token\":\"...\"}", text: $pairingPaste, axis: .vertical)
                         .lineLimit(2 ... 4)
                         .textInputAutocapitalization(.never)
                     Button("Import") {
-                        settings.importPairingJSON(pairingPaste)
-                        pairingPaste = ""
+                        if settings.importPairingJSON(pairingPaste) {
+                            pairingMessage = "Pairing imported"
+                            pairingPaste = ""
+                        } else {
+                            pairingMessage = "Invalid pairing JSON"
+                        }
+                    }
+
+                    if let pairingMessage {
+                        Text(pairingMessage)
+                            .font(.caption)
+                            .foregroundStyle(pairingMessage.contains("Invalid") ? .red : .green)
                     }
                 }
 
@@ -174,6 +235,50 @@ struct SettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
+                }
+            }
+            .sheet(isPresented: $showScanner) {
+                QRScannerSheet(
+                    onCode: { code in
+                        if settings.importPairingJSON(code) {
+                            pairingMessage = "Pairing imported from QR code"
+                            showScanner = false
+                        } else {
+                            pairingMessage = "QR code is not valid pairing data"
+                        }
+                    },
+                    onCancel: { showScanner = false }
+                )
+            }
+        }
+    }
+}
+
+private struct QRScannerSheet: View {
+    let onCode: (String) -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                QRScannerView(onCode: onCode)
+                    .ignoresSafeArea()
+
+                VStack {
+                    Spacer()
+                    Text("Point at the QR code in Cursor Bridge on your Mac")
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                        .padding()
+                }
+            }
+            .navigationTitle("Scan QR code")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", action: onCancel)
                 }
             }
         }

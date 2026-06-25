@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		04D49BAA23F944523AF3FA5B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8762E2F8DB43A0ED554CB595 /* Models.swift */; };
 		121B81483DDAFABE3E7A6124 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87F9B112591BF8F4A278F205 /* NotificationManager.swift */; };
+		3D2E6624E3FF9894C3567E2F /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D9B42F23D41D0A9E2B6D49 /* QRScannerView.swift */; };
 		5593B0ACA3A5CDFBD98A1A03 /* ConversationPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D97A616E230382D5EC089B9 /* ConversationPickerView.swift */; };
 		6C442DCFC5BACF7613B75011 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C541B7307955AEE47EA27A0A /* AppDelegate.swift */; };
 		77C55D1B3C2B64F177EE14A2 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF86EAF60D35335CCAB4418 /* SettingsStore.swift */; };
@@ -21,9 +22,10 @@
 /* Begin PBXFileReference section */
 		0953E62EEB06EECD1073D880 /* BridgeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeClient.swift; sourceTree = "<group>"; };
 		363C6B301A2715F4168206C3 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
-		5E44B3DD1E9DE542908EE53B /* CursorRemote.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CursorRemote.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E44B3DD1E9DE542908EE53B /* CursorRemote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CursorRemote.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6BDC131539C45A71B8FFDBCF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6D97A616E230382D5EC089B9 /* ConversationPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationPickerView.swift; sourceTree = "<group>"; };
+		77D9B42F23D41D0A9E2B6D49 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 		85513C63D29E18BBD0E40CE5 /* CursorRemote.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CursorRemote.entitlements; sourceTree = "<group>"; };
 		8762E2F8DB43A0ED554CB595 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		87F9B112591BF8F4A278F205 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
@@ -45,6 +47,7 @@
 				363C6B301A2715F4168206C3 /* KeychainStore.swift */,
 				8762E2F8DB43A0ED554CB595 /* Models.swift */,
 				87F9B112591BF8F4A278F205 /* NotificationManager.swift */,
+				77D9B42F23D41D0A9E2B6D49 /* QRScannerView.swift */,
 				CBF86EAF60D35335CCAB4418 /* SettingsStore.swift */,
 			);
 			path = CursorRemote;
@@ -94,11 +97,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					457A47B039E00FFCD22DD169 = {
-						DevelopmentTeam = "";
-					};
-				};
 			};
 			buildConfigurationList = CA468AB3584DA1668E8492DA /* Build configuration list for PBXProject "CursorRemote" */;
 			developmentRegion = en;
@@ -132,6 +130,7 @@
 				9DB82D2F9D42189CBB31A72A /* KeychainStore.swift in Sources */,
 				04D49BAA23F944523AF3FA5B /* Models.swift in Sources */,
 				121B81483DDAFABE3E7A6124 /* NotificationManager.swift in Sources */,
+				3D2E6624E3FF9894C3567E2F /* QRScannerView.swift in Sources */,
 				77C55D1B3C2B64F177EE14A2 /* SettingsStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -202,8 +201,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = CursorRemote/CursorRemote.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3ET6W7PR2G;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan the QR code from Cursor Bridge on your Mac";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to Cursor Bridge on your Mac";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
@@ -212,7 +213,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.cursorremote.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jubblin.app;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -288,8 +289,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = CursorRemote/CursorRemote.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3ET6W7PR2G;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan the QR code from Cursor Bridge on your Mac";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to Cursor Bridge on your Mac";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
@@ -298,7 +301,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.cursorremote.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jubblin.app;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

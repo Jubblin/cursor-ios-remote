@@ -3,6 +3,14 @@ import Foundation
 import Network
 
 enum BridgeHTTP {
+    static func queryFlag(path: String, name: String) -> Bool {
+        guard let query = path.split(separator: "?", maxSplits: 1).dropFirst().first else { return false }
+        return query.split(separator: "&").contains { part in
+            let pieces = part.split(separator: "=", maxSplits: 1).map(String.init)
+            return pieces.first == name && (pieces.count < 2 || pieces[1] == "1" || pieces[1].lowercased() == "true")
+        }
+    }
+
     static func respondJSON(_ connection: NWConnection, status: Int, value: some Encodable) {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601

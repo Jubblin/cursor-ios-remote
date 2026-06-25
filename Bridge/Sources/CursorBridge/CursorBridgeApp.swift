@@ -21,9 +21,9 @@ final class BridgeController: ObservableObject {
     @Published var token: String
     @Published var lastStatus: SessionStatus?
     @Published var errorMessage: String?
+    @Published private(set) var pairingQRImage: NSImage?
 
     private var server: BridgeServer?
-    private var refreshTimer: Timer?
 
     init() {
         port = Int(ProcessInfo.processInfo.environment["CURSOR_BRIDGE_PORT"] ?? "8742") ?? 8742
@@ -42,17 +42,26 @@ final class BridgeController: ObservableObject {
     func start() {
         errorMessage = nil
         let server = BridgeServer(port: port, authToken: token)
-        do {
-            try server.start()
+        server.onStatusUpdate = { [weak self] status in
             DispatchQueue.main.async {
-                self.server = server
-                self.isRunning = true
-                self.startStatusRefresh()
+                self?.lastStatus = status
             }
-        } catch {
-            DispatchQueue.main.async {
-                self.errorMessage = error.localizedDescription
-                self.isRunning = false
+        }
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            do {
+                try server.start()
+                DispatchQueue.main.async {
+                    self.server = server
+                    self.isRunning = true
+                    self.lastStatus = server.currentStatus
+                    self.refreshPairingQR()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                    self.isRunning = false
+                }
             }
         }
     }
@@ -62,18 +71,28 @@ final class BridgeController: ObservableObject {
         DispatchQueue.main.async {
             self.server = nil
             self.isRunning = false
-            self.refreshTimer?.invalidate()
-            self.refreshTimer = nil
+            self.pairingQRImage = nil
         }
     }
 
-    private func startStatusRefresh() {
-        refreshTimer?.invalidate()
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            let status = CursorAutomation().detectSessionStatus()
+    func pairingJSON() -> String {
+        PairingPayload.current(
+            hostname: Hostname.local(),
+            port: port,
+            token: token
+        )
+    }
+
+    private func refreshPairingQR() {
+        let json = pairingJSON()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let image = QRCodeImage.make(from: json)
             DispatchQueue.main.async {
-                self.lastStatus = status
+                guard let self else { return }
+                self.pairingQRImage = image
+                if image == nil {
+                    print("[Bridge] Could not generate pairing QR code (\(json.count) bytes)")
+                }
             }
         }
     }
@@ -147,12 +166,17 @@ struct MenuBarView: View {
                     .font(.headline)
             }
 
+            if controller.isRunning {
+                pairingSection
+            }
+
             if let status = controller.lastStatus {
                 Label(status.state.rawValue, systemImage: icon(for: status.state))
                 if let detail = status.detail {
                     Text(detail)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .lineLimit(3)
                 }
             }
 
@@ -166,6 +190,7 @@ struct MenuBarView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
             Text("Use Tailscale hostname when away from home")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -183,11 +208,8 @@ struct MenuBarView: View {
             }
 
             Button("Copy pairing JSON") {
-                let info = """
-                {"hostname":"\(Hostname.local() ?? "your-mac.tailnet-name.ts.net")","port":\(controller.port),"token":"\(controller.token)"}
-                """
                 NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(info, forType: .string)
+                NSPasteboard.general.setString(controller.pairingJSON(), forType: .string)
             }
 
             Button("Quit") {
@@ -196,6 +218,27 @@ struct MenuBarView: View {
         }
         .padding()
         .frame(width: 300)
+    }
+
+    private var pairingSection: some View {
+        VStack(spacing: 8) {
+            Text("Scan to pair iPhone")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if let qrImage = controller.pairingQRImage {
+                Image(nsImage: qrImage)
+                    .interpolation(.none)
+                    .resizable()
+                    .frame(width: 160, height: 160)
+                    .accessibilityLabel("Pairing QR code")
+            } else {
+                Text("QR unavailable — use Copy pairing JSON")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func icon(for state: AgentSessionState) -> String {
