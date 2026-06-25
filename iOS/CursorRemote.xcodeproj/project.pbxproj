@@ -12,6 +12,7 @@
 		5593B0ACA3A5CDFBD98A1A03 /* ConversationPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D97A616E230382D5EC089B9 /* ConversationPickerView.swift */; };
 		6C442DCFC5BACF7613B75011 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C541B7307955AEE47EA27A0A /* AppDelegate.swift */; };
 		77C55D1B3C2B64F177EE14A2 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF86EAF60D35335CCAB4418 /* SettingsStore.swift */; };
+		9DB82D2F9D42189CBB31A72A /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363C6B301A2715F4168206C3 /* KeychainStore.swift */; };
 		A1C14FA05148B42BD885629F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BDC131539C45A71B8FFDBCF /* ContentView.swift */; };
 		B132ECF5508F70D0EB1E0488 /* CursorRemoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A7DE397BA29BC2E9C053F1 /* CursorRemoteApp.swift */; };
 		B3EEF6DE06E73761FB4E3370 /* BridgeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0953E62EEB06EECD1073D880 /* BridgeClient.swift */; };
@@ -19,7 +20,8 @@
 
 /* Begin PBXFileReference section */
 		0953E62EEB06EECD1073D880 /* BridgeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeClient.swift; sourceTree = "<group>"; };
-		5E44B3DD1E9DE542908EE53B /* CursorRemote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CursorRemote.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		363C6B301A2715F4168206C3 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		5E44B3DD1E9DE542908EE53B /* CursorRemote.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CursorRemote.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6BDC131539C45A71B8FFDBCF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6D97A616E230382D5EC089B9 /* ConversationPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationPickerView.swift; sourceTree = "<group>"; };
 		85513C63D29E18BBD0E40CE5 /* CursorRemote.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CursorRemote.entitlements; sourceTree = "<group>"; };
@@ -40,6 +42,7 @@
 				6D97A616E230382D5EC089B9 /* ConversationPickerView.swift */,
 				85513C63D29E18BBD0E40CE5 /* CursorRemote.entitlements */,
 				E1A7DE397BA29BC2E9C053F1 /* CursorRemoteApp.swift */,
+				363C6B301A2715F4168206C3 /* KeychainStore.swift */,
 				8762E2F8DB43A0ED554CB595 /* Models.swift */,
 				87F9B112591BF8F4A278F205 /* NotificationManager.swift */,
 				CBF86EAF60D35335CCAB4418 /* SettingsStore.swift */,
@@ -91,6 +94,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					457A47B039E00FFCD22DD169 = {
+						DevelopmentTeam = "";
+					};
+				};
 			};
 			buildConfigurationList = CA468AB3584DA1668E8492DA /* Build configuration list for PBXProject "CursorRemote" */;
 			developmentRegion = en;
@@ -121,6 +129,7 @@
 				A1C14FA05148B42BD885629F /* ContentView.swift in Sources */,
 				5593B0ACA3A5CDFBD98A1A03 /* ConversationPickerView.swift in Sources */,
 				B132ECF5508F70D0EB1E0488 /* CursorRemoteApp.swift in Sources */,
+				9DB82D2F9D42189CBB31A72A /* KeychainStore.swift in Sources */,
 				04D49BAA23F944523AF3FA5B /* Models.swift in Sources */,
 				121B81483DDAFABE3E7A6124 /* NotificationManager.swift in Sources */,
 				77C55D1B3C2B64F177EE14A2 /* SettingsStore.swift in Sources */,
@@ -279,7 +288,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = CursorRemote/CursorRemote.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 3ET6W7PR2G;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to Cursor Bridge on your Mac";
@@ -290,7 +298,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jubblin.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cursorremote.app;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

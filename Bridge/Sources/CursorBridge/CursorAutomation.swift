@@ -86,7 +86,7 @@ final class CursorAutomation {
     }
 
     func approve() -> ActionResponse {
-        clickMatchingButton(labels: approvalButtonLabels, fallbackKey: returnKeyScript())
+        clickMatchingButton(labels: approvalButtonLabels, fallbackKey: nil)
     }
 
     func reject() -> ActionResponse {
@@ -205,7 +205,7 @@ final class CursorAutomation {
         return false
     }
 
-    private func clickMatchingButton(labels: [String], fallbackKey: String) -> ActionResponse {
+    private func clickMatchingButton(labels: [String], fallbackKey: String?) -> ActionResponse {
         guard isCursorRunning() else {
             return ActionResponse(success: false, message: "Cursor is not running")
         }
@@ -225,11 +225,14 @@ final class CursorAutomation {
             }
         }
 
-        let fallback = runAppleScript(fallbackKey)
-        if fallback.success {
-            return ActionResponse(success: true, message: "Used keyboard fallback")
+        if let fallbackKey {
+            let fallback = runAppleScript(fallbackKey)
+            if fallback.success {
+                return ActionResponse(success: true, message: "Used keyboard fallback")
+            }
+            return ActionResponse(success: false, message: fallback.error ?? "No matching control found")
         }
-        return ActionResponse(success: false, message: fallback.error ?? "No matching control found")
+        return ActionResponse(success: false, message: "No matching control found")
     }
 
     private func findButton(titled title: String, in element: AXUIElement) -> AXUIElement? {
@@ -256,14 +259,6 @@ final class CursorAutomation {
             }
         }
         return nil
-    }
-
-    private func returnKeyScript() -> String {
-        """
-        tell application "System Events"
-            keystroke return
-        end tell
-        """
     }
 
     private func escapeKeyScript() -> String {

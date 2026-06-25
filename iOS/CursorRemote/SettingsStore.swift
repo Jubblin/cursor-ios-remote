@@ -9,12 +9,54 @@ final class SettingsStore: ObservableObject {
 
     private let key = "bridge_settings"
 
+    private struct PersistedSettings: Codable {
+        var hostname: String
+        var port: Int
+        var useHTTPS: Bool
+        var selectedAgentId: String?
+    }
+
     init() {
-        if let data = UserDefaults.standard.data(forKey: key),
-           let decoded = try? JSONDecoder().decode(BridgeSettings.self, from: data) {
-            settings = decoded
+        let keychainToken = KeychainStore.loadToken() ?? ""
+        if let data = UserDefaults.standard.data(forKey: key) {
+            if let persisted = try? JSONDecoder().decode(PersistedSettings.self, from: data) {
+                settings = BridgeSettings(
+                    hostname: persisted.hostname,
+                    port: persisted.port,
+                    token: keychainToken,
+                    useHTTPS: persisted.useHTTPS,
+                    selectedAgentId: persisted.selectedAgentId
+                )
+            } else if let legacy = try? JSONDecoder().decode(BridgeSettings.self, from: data) {
+                let token = legacy.token.isEmpty ? keychainToken : legacy.token
+                if !legacy.token.isEmpty {
+                    KeychainStore.saveToken(legacy.token)
+                }
+                settings = BridgeSettings(
+                    hostname: legacy.hostname,
+                    port: legacy.port,
+                    token: token,
+                    useHTTPS: legacy.useHTTPS,
+                    selectedAgentId: legacy.selectedAgentId
+                )
+                save()
+            } else {
+                settings = BridgeSettings(
+                    hostname: "",
+                    port: 8742,
+                    token: keychainToken,
+                    useHTTPS: false,
+                    selectedAgentId: nil
+                )
+            }
         } else {
-            settings = .default
+            settings = BridgeSettings(
+                hostname: "",
+                port: 8742,
+                token: keychainToken,
+                useHTTPS: false,
+                selectedAgentId: nil
+            )
         }
     }
 
@@ -24,11 +66,29 @@ final class SettingsStore: ObservableObject {
               let hostname = object["hostname"] as? String,
               let token = object["token"] as? String else { return }
         let port = object["port"] as? Int ?? 8742
-        settings = BridgeSettings(hostname: hostname, port: port, token: token, useHTTPS: false)
+        let useHTTPS = (object["useHTTPS"] as? Bool) ?? settings.useHTTPS
+        settings = BridgeSettings(
+            hostname: hostname,
+            port: port,
+            token: token,
+            useHTTPS: useHTTPS,
+            selectedAgentId: settings.selectedAgentId
+        )
     }
 
     private func save() {
-        if let data = try? JSONEncoder().encode(settings) {
+        if settings.token.isEmpty {
+            KeychainStore.deleteToken()
+        } else {
+            KeychainStore.saveToken(settings.token)
+        }
+        let persisted = PersistedSettings(
+            hostname: settings.hostname,
+            port: settings.port,
+            useHTTPS: settings.useHTTPS,
+            selectedAgentId: settings.selectedAgentId
+        )
+        if let data = try? JSONEncoder().encode(persisted) {
             UserDefaults.standard.set(data, forKey: key)
         }
     }

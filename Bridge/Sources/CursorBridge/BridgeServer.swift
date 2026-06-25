@@ -9,6 +9,7 @@ final class BridgeServer {
     private let catalog = ConversationCatalog()
     private let pushService = PushNotificationService()
     private let startedAt = Date()
+    private let authLimiter = AuthRateLimiter()
     private var listener: NWListener?
     private var websockets: [ObjectIdentifier: NWConnection] = [:]
     private var pollTimer: DispatchSourceTimer?
@@ -21,15 +22,27 @@ final class BridgeServer {
     }
 
     func start() throws {
+        let bindAddress = BridgeSecurity.listenAddress()
         let params = NWParameters.tcp
         params.allowLocalEndpointReuse = true
-        listener = try NWListener(using: params, on: NWEndpoint.Port(rawValue: port)!)
+        guard let portEndpoint = NWEndpoint.Port(rawValue: port) else {
+            throw BridgeServerError.invalidPort
+        }
+        params.requiredLocalEndpoint = NWEndpoint.hostPort(
+            host: NWEndpoint.Host(bindAddress),
+            port: portEndpoint
+        )
+        listener = try NWListener(using: params)
         listener?.newConnectionHandler = { [weak self] connection in
             self?.handle(connection: connection)
         }
         listener?.start(queue: queue)
         startPolling()
-        print("[Bridge] Listening on 0.0.0.0:\(port)")
+        if BridgeSecurity.bindsAllInterfaces(bindAddress) {
+            print("[Bridge] Listening on \(bindAddress):\(port) (all interfaces — use Tailscale or set CURSOR_BRIDGE_BIND to restrict)")
+        } else {
+            print("[Bridge] Listening on \(bindAddress):\(port)")
+        }
     }
 
     func stop() {
@@ -64,7 +77,7 @@ final class BridgeServer {
         let event = WebSocketEvent(type: "status_changed", status: status)
         guard let data = try? JSONEncoder().encode(event),
               let json = String(data: data, encoding: .utf8) else { return }
-        let frame = Self.wsTextFrame(json)
+        let frame = BridgeWebSocket.textFrame(json)
         for (_, conn) in websockets {
             conn.send(content: frame, completion: .contentProcessed { _ in })
         }
@@ -122,6 +135,10 @@ final class BridgeServer {
             }
 
             let contentLength = Int(headers["content-length"] ?? "0") ?? 0
+            if contentLength > BridgeSecurity.maxHTTPBodyBytes {
+                BridgeHTTP.respondJSON(connection, status: 413, value: ActionResponse(success: false, message: "Request body too large"))
+                return
+            }
             let body = bodyData
             if body.count < contentLength {
                 readRemainingBody(
@@ -153,6 +170,10 @@ final class BridgeServer {
         path: String,
         headers: [String: String]
     ) {
+        if needed > BridgeSecurity.maxHTTPBodyBytes || existing.count + needed > BridgeSecurity.maxHTTPBodyBytes {
+            BridgeHTTP.respondJSON(connection, status: 413, value: ActionResponse(success: false, message: "Request body too large"))
+            return
+        }
         connection.receive(minimumIncompleteLength: needed, maximumLength: needed) { [weak self] data, _, _, _ in
             guard let self else { return }
             var body = existing
@@ -169,65 +190,44 @@ final class BridgeServer {
         body: Data
     ) {
         if path == "/health" {
-            let health = BridgeHealth(
-                ok: true,
-                version: "1.0.0",
-                uptimeSeconds: Int(Date().timeIntervalSince(startedAt))
-            )
-            respondJSON(connection, status: 200, value: health)
+            BridgeHTTP.respondJSON(connection, status: 200, value: ["ok": true])
             return
         }
 
-        if !authorized(headers: headers) {
-            respondJSON(connection, status: 401, value: ActionResponse(success: false, message: "Unauthorized"))
-            return
-        }
+        guard ensureAuthorized(connection: connection, headers: headers) else { return }
 
         let pathOnly = path.split(separator: "?", maxSplits: 1).first.map(String.init) ?? path
 
         switch (method, pathOnly) {
         case ("GET", "/pairing"):
-            respondJSON(connection, status: 200, value: PairingInfo(
+            BridgeHTTP.respondJSON(connection, status: 200, value: PairingInfo(
                 token: authToken,
                 port: Int(port),
                 hostname: Hostname.local() ?? "localhost"
             ))
         case ("GET", "/agents"):
-            respondJSON(connection, status: 200, value: AgentListResponse(
+            BridgeHTTP.respondJSON(connection, status: 200, value: AgentListResponse(
                 agents: catalog.listAgentConversations()
             ))
         case ("GET", "/projects"):
             let includeArchived = queryFlag(path: path, name: "include_archived")
-            respondJSON(connection, status: 200, value: ProjectListResponse(
+            BridgeHTTP.respondJSON(connection, status: 200, value: ProjectListResponse(
                 projects: catalog.listProjects(includeArchived: includeArchived)
             ))
         case let ("GET", projectPath) where projectPath.hasPrefix("/projects/") && projectPath.hasSuffix("/conversations"):
-            let parts = projectPath.split(separator: "/").map(String.init)
-            guard parts.count == 3 else {
-                respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid path"))
-                return
-            }
-            let projectId = parts[1]
-            let includeArchived = queryFlag(path: path, name: "include_archived")
-            if let list = catalog.listConversations(projectId: projectId, includeArchived: includeArchived) {
-                respondJSON(connection, status: 200, value: list)
-            } else {
-                respondJSON(connection, status: 404, value: ActionResponse(success: false, message: "Project not found"))
-            }
+            handleProjectConversations(connection: connection, projectPath: projectPath, path: path)
         case ("GET", "/session/status"):
-            respondJSON(connection, status: 200, value: automation.detectSessionStatus())
+            BridgeHTTP.respondJSON(connection, status: 200, value: automation.detectSessionStatus())
         case ("POST", "/session/prompt"):
             if let req = try? JSONDecoder().decode(PromptRequest.self, from: body) {
-                respondJSON(connection, status: 200, value: automation.sendPrompt(req.text))
+                BridgeHTTP.respondJSON(connection, status: 200, value: automation.sendPrompt(req.text))
             } else {
-                respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid body"))
+                BridgeHTTP.respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid body"))
             }
         case ("POST", "/session/approve"):
-            let result = automation.approve()
-            respondJSON(connection, status: 200, value: result)
+            BridgeHTTP.respondJSON(connection, status: 200, value: automation.approve())
         case ("POST", "/session/reject"):
-            let result = automation.reject()
-            respondJSON(connection, status: 200, value: result)
+            BridgeHTTP.respondJSON(connection, status: 200, value: automation.reject())
         case ("POST", "/agents/select"):
             if let req = try? JSONDecoder().decode(SelectAgentRequest.self, from: body),
                let agent = catalog.agent(id: req.agentId),
@@ -236,9 +236,9 @@ final class BridgeServer {
                     workspacePath: workspacePath,
                     conversationName: agent.name
                 )
-                respondJSON(connection, status: 200, value: result)
+                BridgeHTTP.respondJSON(connection, status: 200, value: result)
             } else {
-                respondJSON(connection, status: 400, value: ActionResponse(
+                BridgeHTTP.respondJSON(connection, status: 400, value: ActionResponse(
                     success: false,
                     message: "Agent not found or workspace unavailable"
                 ))
@@ -251,25 +251,80 @@ final class BridgeServer {
                     workspacePath: workspacePath,
                     conversationName: conversation.name
                 )
-                respondJSON(connection, status: 200, value: result)
+                BridgeHTTP.respondJSON(connection, status: 200, value: result)
             } else {
-                respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid project or conversation"))
+                BridgeHTTP.respondJSON(
+                    connection,
+                    status: 400,
+                    value: ActionResponse(success: false, message: "Invalid project or conversation")
+                )
             }
         case ("POST", "/devices/register"):
-            if let req = try? JSONDecoder().decode(DeviceRegistration.self, from: body) {
-                pushService.register(token: req.deviceToken)
-                respondJSON(connection, status: 200, value: ActionResponse(success: true, message: "Registered"))
-            } else {
-                respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid body"))
-            }
+            handleDeviceRegister(connection: connection, body: body)
         default:
-            respondJSON(connection, status: 404, value: ActionResponse(success: false, message: "Not found"))
+            BridgeHTTP.respondJSON(connection, status: 404, value: ActionResponse(success: false, message: "Not found"))
         }
     }
 
-    private func authorized(headers: [String: String]) -> Bool {
+    private func ensureAuthorized(connection: NWConnection, headers: [String: String]) -> Bool {
+        let clientKey = connectionKey(connection)
+        if authLimiter.isBlocked(key: clientKey) {
+            BridgeHTTP.respondJSON(connection, status: 429, value: ActionResponse(success: false, message: "Too many failed auth attempts"))
+            return false
+        }
+        if !authorized(headers: headers, clientKey: clientKey) {
+            authLimiter.recordFailure(key: clientKey)
+            BridgeHTTP.respondJSON(connection, status: 401, value: ActionResponse(success: false, message: "Unauthorized"))
+            return false
+        }
+        authLimiter.reset(key: clientKey)
+        return true
+    }
+
+    private func handleProjectConversations(connection: NWConnection, projectPath: String, path: String) {
+        let parts = projectPath.split(separator: "/").map(String.init)
+        guard parts.count == 3 else {
+            BridgeHTTP.respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid path"))
+            return
+        }
+        let projectId = parts[1]
+        let includeArchived = queryFlag(path: path, name: "include_archived")
+        if let list = catalog.listConversations(projectId: projectId, includeArchived: includeArchived) {
+            BridgeHTTP.respondJSON(connection, status: 200, value: list)
+        } else {
+            BridgeHTTP.respondJSON(connection, status: 404, value: ActionResponse(success: false, message: "Project not found"))
+        }
+    }
+
+    private func handleDeviceRegister(connection: NWConnection, body: Data) {
+        guard let req = try? JSONDecoder().decode(DeviceRegistration.self, from: body) else {
+            BridgeHTTP.respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid body"))
+            return
+        }
+        guard req.bundleId == BridgeSecurity.expectedIOSBundleId else {
+            BridgeHTTP.respondJSON(connection, status: 400, value: ActionResponse(success: false, message: "Invalid bundle ID"))
+            return
+        }
+        if pushService.register(token: req.deviceToken) {
+            BridgeHTTP.respondJSON(connection, status: 200, value: ActionResponse(success: true, message: "Registered"))
+        } else {
+            BridgeHTTP.respondJSON(connection, status: 507, value: ActionResponse(success: false, message: "Device token limit reached"))
+        }
+    }
+
+    private func authorized(headers: [String: String], clientKey: String) -> Bool {
         guard let auth = headers["authorization"] else { return false }
-        return auth == "Bearer \(authToken)"
+        let expected = "Bearer \(authToken)"
+        guard BridgeSecurity.constantTimeEqual(auth, expected) else { return false }
+        _ = clientKey
+        return true
+    }
+
+    private func connectionKey(_ connection: NWConnection) -> String {
+        if let endpoint = connection.currentPath?.remoteEndpoint {
+            return "\(endpoint)"
+        }
+        return "\(ObjectIdentifier(connection))"
     }
 
     private func queryFlag(path: String, name: String) -> Bool {
@@ -281,15 +336,22 @@ final class BridgeServer {
     }
 
     private func upgradeWebSocket(connection: NWConnection, headers: [String: String], path: String) {
-        guard path == "/ws", authorized(headers: headers) else {
-            respondJSON(connection, status: 401, value: ActionResponse(success: false, message: "Unauthorized"))
+        let clientKey = connectionKey(connection)
+        if authLimiter.isBlocked(key: clientKey) {
+            BridgeHTTP.respondJSON(connection, status: 429, value: ActionResponse(success: false, message: "Too many failed auth attempts"))
             return
         }
+        guard path == "/ws", authorized(headers: headers, clientKey: clientKey) else {
+            authLimiter.recordFailure(key: clientKey)
+            BridgeHTTP.respondJSON(connection, status: 401, value: ActionResponse(success: false, message: "Unauthorized"))
+            return
+        }
+        authLimiter.reset(key: clientKey)
         guard let key = headers["sec-websocket-key"] else {
             connection.cancel()
             return
         }
-        let accept = Self.websocketAccept(key: key)
+        let accept = BridgeWebSocket.accept(key: key)
         let response = """
         HTTP/1.1 101 Switching Protocols\r
         Upgrade: websocket\r
@@ -304,7 +366,7 @@ final class BridgeServer {
             let status = automation.detectSessionStatus()
             if let data = try? JSONEncoder().encode(WebSocketEvent(type: "status_changed", status: status)),
                let json = String(data: data, encoding: .utf8) {
-                connection.send(content: Self.wsTextFrame(json), completion: .contentProcessed { _ in })
+                connection.send(content: BridgeWebSocket.textFrame(json), completion: .contentProcessed { _ in })
             }
             listenWebSocket(connection)
         })
@@ -320,55 +382,8 @@ final class BridgeServer {
             self?.listenWebSocket(connection)
         }
     }
-
-    private func respondJSON(_ connection: NWConnection, status: Int, value: some Encodable) {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        guard let data = try? encoder.encode(value) else {
-            connection.cancel()
-            return
-        }
-        let response = """
-        HTTP/1.1 \(status) OK\r
-        Content-Type: application/json\r
-        Content-Length: \(data.count)\r
-        Connection: close\r
-        \r
-
-        """
-        var out = Data(response.utf8)
-        out.append(data)
-        connection.send(content: out, completion: .contentProcessed { _ in
-            connection.cancel()
-        })
-    }
-
-    private static func websocketAccept(key: String) -> String {
-        let magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-        let sha = Insecure.SHA1.hash(data: Data((key + magic).utf8))
-        return Data(sha).base64EncodedString()
-    }
-
-    private static func wsTextFrame(_ text: String) -> Data {
-        let payload = Data(text.utf8)
-        var frame = Data()
-        frame.append(0x81)
-        if payload.count < 126 {
-            frame.append(UInt8(payload.count))
-        } else {
-            frame.append(126)
-            frame.append(UInt8((payload.count >> 8) & 0xFF))
-            frame.append(UInt8(payload.count & 0xFF))
-        }
-        frame.append(payload)
-        return frame
-    }
 }
 
-enum Hostname {
-    static func local() -> String? {
-        var buffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-        guard gethostname(&buffer, buffer.count) == 0 else { return nil }
-        return String(cString: buffer)
-    }
+enum BridgeServerError: Error {
+    case invalidPort
 }

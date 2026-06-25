@@ -37,12 +37,14 @@ Optional env vars:
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `CURSOR_BRIDGE_PORT` | `8742` | API listen port |
+| `CURSOR_BRIDGE_BIND` | — | Bind to a specific address (e.g. `127.0.0.1` or a Tailscale IP) |
+| `CURSOR_BRIDGE_BIND_ALL` | `1` (implicit) | Set to bind `0.0.0.0` (default). Omit and use `CURSOR_BRIDGE_BIND` to restrict |
 | `APNS_KEY_PATH` | — | APNs `.p8` key for push notifications |
 | `APNS_KEY_ID` | — | Apple key ID |
 | `APNS_TEAM_ID` | — | Apple team ID |
 | `APNS_TOPIC` | — | iOS bundle ID (`com.cursorremote.app`) |
 
-Token is stored at `~/.cursor-bridge/token.txt`.
+Token is stored at `~/.cursor-bridge/token.txt` (file mode `0600`). The menu bar UI shows only a token suffix; use **Copy pairing JSON** to transfer credentials to the iOS app.
 
 ### 2. iOS app
 
@@ -110,6 +112,15 @@ The Mac bridge scans `~/.cursor/projects/*/agent-transcripts/` and maps each ses
 - Approve/reject matches buttons titled Run, Accept, Approve, Skip, Reject, etc.
 - Prompt delivery uses Cmd+I composer shortcut + paste — tune in `CursorAutomation.swift` if your keybindings differ.
 - HTTP is unencrypted; use only on trusted LAN or Tailscale mesh.
+
+## Security
+
+- **Auth** — Bearer token required on all endpoints except `GET /health`. Comparison uses constant-time equality; failed attempts are rate-limited per client (HTTP 429).
+- **Bind address** — By default the bridge listens on all interfaces (`0.0.0.0`) so your iPhone can reach it over Tailscale/LAN. Set `CURSOR_BRIDGE_BIND=127.0.0.1` to restrict to localhost, or set a specific Tailscale IP.
+- **Request bodies** — Capped at 64 KB (HTTP 413).
+- **Device registration** — iOS bundle ID must match `com.cursorremote.app`; at most 10 APNs device tokens per bridge instance.
+- **Approve automation** — Approve only clicks a matching button (no Return-key fallback). Reject may still use Escape as a fallback.
+- **iOS token storage** — Auth token is stored in the Keychain, not UserDefaults.
 
 ## Project layout
 

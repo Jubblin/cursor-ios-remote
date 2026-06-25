@@ -5,10 +5,13 @@ final class PushNotificationService {
     private var deviceTokens: Set<String> = []
     private let lock = NSLock()
 
-    func register(token: String) {
+    func register(token: String) -> Bool {
         lock.lock()
+        defer { lock.unlock() }
+        if deviceTokens.contains(token) { return true }
+        if deviceTokens.count >= BridgeSecurity.maxDeviceTokens { return false }
         deviceTokens.insert(token)
-        lock.unlock()
+        return true
     }
 
     func sendApprovalRequest(detail: String?) async {

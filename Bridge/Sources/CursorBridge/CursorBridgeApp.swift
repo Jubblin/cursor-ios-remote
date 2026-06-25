@@ -27,6 +27,7 @@ final class BridgeController: ObservableObject {
 
     init() {
         port = Int(ProcessInfo.processInfo.environment["CURSOR_BRIDGE_PORT"] ?? "8742") ?? 8742
+        Self.secureTokenFile()
         token = BridgeController.loadOrCreateToken()
     }
 
@@ -89,8 +90,21 @@ final class BridgeController: ObservableObject {
             at: url.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
-        try? token.data(using: .utf8)?.write(to: url)
+        try? token.data(using: .utf8)?.write(to: url, options: .atomic)
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: NSNumber(value: Int16(0o600))],
+            ofItemAtPath: url.path
+        )
         return token
+    }
+
+    static func secureTokenFile() {
+        let url = tokenFileURL()
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: NSNumber(value: Int16(0o600))],
+            ofItemAtPath: url.path
+        )
     }
 
     static func tokenFileURL() -> URL {
@@ -143,8 +157,15 @@ struct MenuBarView: View {
             }
 
             Text("Port: \(controller.port)")
-            Text("Token: \(controller.token.prefix(8))…")
-                .textSelection(.enabled)
+            if controller.token.isEmpty {
+                Text("Token: not set")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Token: ••••\(controller.token.suffix(4))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             Text("Use Tailscale hostname when away from home")
                 .font(.caption)
                 .foregroundStyle(.secondary)
